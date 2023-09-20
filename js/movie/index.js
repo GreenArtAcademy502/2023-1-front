@@ -3,10 +3,37 @@
     const accessToken = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3NzJjNmIwYjlhYWQxMzEyYzlkYWY3MmZmZWYzYmM3MiIsInN1YiI6IjYxZmNlOGY3N2E5N2FiMDA0N2U2ZTMzMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.Skjv6dYxa7qjdxWSz1tJVMH151T2WMNp4pzuursIeYw';
     const url = `https://api.themoviedb.org/3/movie/popular?language=ko-KR&page=`;
     const posterPrefix = 'https://image.tmdb.org/t/p/w300';
+        
     const $divListingCardList = document.querySelector('.listing-card__list');
+
+    let loading = false;
     let page = 1;
 
+    function init() {
+        let isScrolling = null;
+
+        window.addEventListener('scroll', e => {
+            console.log('scroll!');
+
+            if(isScrolling) { clearTimeout( isScrolling ); }
+
+            isScrolling = setTimeout(function() {                
+                const scrollTop = document.documentElement.scrollTop; //스크롤된 top값
+                const clientHeight = document.documentElement.clientHeight; //화면에 보이는 viewport height
+                const scrollHeight = document.documentElement.scrollHeight; //전체 스크롤 크기
+                     
+                const currentScrollHeight = scrollTop + clientHeight; //스크롤된 전체 값
+                if(scrollHeight - currentScrollHeight < 100 && !loading) {
+                    getMovieData();
+                }
+            }, 500);
+        }, false);
+    }
+    init();
+    
+
     async function getMovieData() {
+        loading = true;
         const res = await fetch(url + page++, {
             headers: {
                 Authorization: `Bearer ${accessToken}`,
@@ -18,7 +45,8 @@
         console.log(data);
         if(data.results.length > 0) {
             makeList(data.results);
-        }        
+        }  
+        loading = false;      
     }
     getMovieData();
 
